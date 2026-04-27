@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="keywords"
+      content="ICT, ICT Sri Lanka, Advanced level ict, AL ict, A/L ICT, ol ict, o/L ict, Ordinary level ict, information technology, ictkathurusingha, kathurusingha"
+    />
+    <meta name="description" content="Student Portal | ICT Kathurusingha" />
+    <link href="//fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet" />
+    <!-- SPLASH SCREEN-->
+    <link rel="stylesheet" id="layout-styles-anchor" href="%PUBLIC_URL%/splash-screen.css" />
+    <title>Student Portal | ICT Kathurusingha</title>
+    <link rel="shortcut icon" href="%PUBLIC_URL%/media/logos/favicon.ico" />
+    <script src="https://www.payhere.lk/lib/payhere.js"></script>
+    <!-- <script
+      src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+      async
+    ></script> -->
+    <!-- <script type="text/javascript">
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement(
+          {
+            pageLanguage: 'en',
+            layout: window.google.translate.TranslateElement.InlineLayout.VERTICAL,
+          },
+          'google_translate_element'
+        )
+      }
+    </script> -->
+    <!-- Start of Async Drift Code -->
+    <script>
+      'use strict'
+
+      !(function () {
+        var t = (window.driftt = window.drift = window.driftt || [])
+        if (!t.init) {
+          if (t.invoked)
+            return void (
+              window.console &&
+              console.error &&
+              console.error('Drift snippet included twice.')
+            )
+          ;(t.invoked = !0),
+            (t.methods = [
+              'identify',
+              'config',
+              'track',
+              'reset',
+              'debug',
+              'show',
+              'ping',
+              'page',
+              'hide',
+              'off',
+              'on',
+            ]),
+            (t.factory = function (e) {
+              return function () {
+                var n = Array.prototype.slice.call(arguments)
+                return n.unshift(e), t.push(n), t
+              }
+            }),
+            t.methods.forEach(function (e) {
+              t[e] = t.factory(e)
+            }),
+            (t.load = function (t) {
+              var e = 3e5,
+                n = Math.ceil(new Date() / e) * e,
+                o = document.createElement('script')
+              ;(o.type = 'text/javascript'),
+                (o.async = !0),
+                (o.crossorigin = 'anonymous'),
+                (o.src = 'https://js.driftt.com/include/' + n + '/' + t + '.js')
+              var i = document.getElementsByTagName('script')[0]
+              i.parentNode.insertBefore(o, i)
+            })
+        }
+      })()
+      drift.SNIPPET_VERSION = '0.3.1'
+      drift.load('dtbb87uh7sbr')
+    </script>
+    <!-- End of Async Drift Code -->
+
+    <!-- Start of Onesignal notification Code -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      // Initialize OneSignal
+    window.OneSignal = window.OneSignal || [];
+    OneSignal.push(async function() {
+      await OneSignal.init({
+        appId: "d2a52bc5-9db3-4ece-8fc9-bda2cc82bdd4",
+      });
+
+      // Retrieve the OneSignal user ID
+      OneSignal.getUserId().then(function(userId) {
+        console.log('OneSignal User ID:', userId);
+      }).catch(function(error) {
+        console.error('Error getting OneSignal User ID:', error);
+      });
+    });
+
+    // Retrieve the push subscription ID from the existing service worker
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.ready.then(function(registration) {
+        return registration.pushManager.getSubscription();
+      }).then(function(subscription) {
+        if (subscription) {
+          console.log('Push Subscription ID:', subscription.endpoint);
+        } else {
+          console.log('No push subscription found.');
+        }
+      }).catch(function(error) {
+        console.error('Error getting push subscription:', error);
+      });
+    } else {
+      console.error('Push API or Service Worker is not supported.');
+    }
+    </script>
+  </head>
+  <!-- TIP: add dark-mode class to enable dark mode -->
+  <body id="kt_body" class="page-loading dark-mode">
+    <!-- <div id="google_translate_element222222"></div> -->
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root" class="d-flex flex-column flex-root"></div>
+    <div id="splash-screen" class="splash-screen">
+      <img src="%PUBLIC_URL%/media/logos/logo2.png" alt="Metronic logo" class="h-50px" />
+      <span>Loading ...</span>
+    </div>
+    <div id="root-modals"></div>
+    <script type="text/javascript" src="https://www.payhere.lk/lib/payhere.js"></script>
+    <!-- <script src="//code.tidio.co/zlh2myamclyod4b77f60vqhrvca6webz.js" async></script> -->
+  </body>
+</html>

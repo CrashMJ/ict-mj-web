@@ -1,0 +1,6 @@
+export const API_BASE_URL = 'https://prod-api-v2.ictkathurusingha.com/'
+// export const API_BASE_URL = 'http://localhost:3000/'
+// export const API_BASE_URL = 'https://prod-api.ictkathurusingha.com/'
+export const GCP_STORAGE_BASE_URL = 'https://storage.googleapis.com/ict-kath-bucket/'
+export const LESSON_YT_PLAYER_URL = 'https://ict-kath-player.web.app/?embedCode='
+export const LESSON_DRIVER_URL = 'https://drive.google.com/file/d/'
