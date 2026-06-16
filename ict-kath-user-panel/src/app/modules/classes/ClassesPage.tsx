@@ -44,7 +44,7 @@ const ClassesPage = () => {
           path='list'
           element={
             <>
-              <PageTitle breadcrumbs={usersBreadcrumbs}>Classes List     </PageTitle>
+              <PageTitle breadcrumbs={usersBreadcrumbs}>Online Class Link     </PageTitle>
               <UsersListWrapper />
             </>
           }

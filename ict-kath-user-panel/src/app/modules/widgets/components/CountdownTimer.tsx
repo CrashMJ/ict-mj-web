@@ -33,8 +33,8 @@ const CountdownTimer: React.FC = () => {
   useEffect(() => {
   const fetchSettings = async () => {
     try {
-      const users2025List = await axios.get(`${API_BASE_URL}api/enrollment/2025/all`);
-      const finalUsers = users2025List.data.data;
+      const usersThisYearList = await axios.get(`${API_BASE_URL}api/enrollment/year/all`);
+      const finalUsers = usersThisYearList.data.data;
 
       const findAvailableUser = await finalUsers.find((user:any) => user.id === auth.id);
       // If the logged-in user is NOT in the 2025 users list, do not show the countdown

@@ -17,8 +17,8 @@ export function MenuInner() {
   return (
     <>
       <MenuItem title={intl.formatMessage({id: 'MENU.DASHBOARD'})} to='/dashboard' />
-      <MenuItem title='Classes' to='/classes/list' />
-      <MenuItem title='Lessons' to='/lessons/category' />
+      <MenuItem title='Online Class Link' to='/classes/list' />
+      <MenuItem title='Lesson Purchase' to='/lessons/category' />
       <MenuItem title='Payments' to='/payments/list' />
       <MenuItem title='Homework' to='/homework/list' />
       {/* <MenuItem title='Class Schedule' to='/static/schedule' /> */}

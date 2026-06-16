@@ -29,15 +29,15 @@ export function AsideMenuMain() {
       />
       <AsideMenuItem
         to='/classes/list'
-        title='Classes'
-        bsTitle='Classes'
+        title='Online Class Link'
+        bsTitle='Online Class Link'
         fontIcon='bi-calendar-check'
         className='py-3'
       />
       <AsideMenuItem
         to='/lessons/category'
-        title='Lessons'
-        bsTitle='Lessons'
+        title='Lesson Purchase'
+        bsTitle='Lesson Purchase'
         fontIcon='bi-camera-video'
         className='py-3'
       />
