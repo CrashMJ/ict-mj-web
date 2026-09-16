@@ -214,6 +214,67 @@ const registrationSchema = Yup.object().shape({
   }),
 })
 
+const FIELD_LABELS: Record<string, string> = {
+  firstname: 'First name',
+  lastname: 'Last name',
+  dob: 'Date of birth',
+  phone: 'Phone number',
+  class_grade: 'Class grade',
+  nic: 'NIC',
+  nic_front: 'NIC front image',
+  nic_back: 'NIC back image',
+  email: 'Email',
+  school: 'School',
+  address: 'Address',
+  district: 'District',
+  class_type: 'Class type',
+  location: 'Location',
+  password: 'Password',
+  changepassword: 'Confirm password',
+  acceptTerms: 'Accept terms',
+}
+
+const REQUIRED_FIELD_ORDER = [
+  'firstname',
+  'lastname',
+  'dob',
+  'phone',
+  'class_grade',
+  'nic',
+  'nic_front',
+  'nic_back',
+  'email',
+  'school',
+  'address',
+  'district',
+  'class_type',
+  'location',
+  'password',
+  'changepassword',
+  'acceptTerms',
+] as const
+
+const isFieldApplicable = (field: string, values: typeof initialValues) => {
+  if (['nic', 'nic_front', 'nic_back'].includes(field)) {
+    return values.class_grade === 'al'
+  }
+  if (field === 'location') {
+    return values.class_type === 'physical'
+  }
+  return true
+}
+
+const isFieldComplete = (
+  field: string,
+  values: typeof initialValues,
+  errors: Record<string, any>
+) => {
+  if (field === 'acceptTerms') return Boolean(values.acceptTerms)
+  const value = (values as any)[field]
+  const hasValue = value instanceof File ? true : Boolean(value)
+  return hasValue && !errors[field]
+}
+
 export function Registration() {
   const [loading, setLoading] = useState(false)
   const {saveAuth, setCurrentUser} = useAuth()
@@ -221,10 +282,12 @@ export function Registration() {
   const [showLocation, setShowLocation] = useState(false)
   const [nicFrontPreview, setNicFrontPreview] = useState<string | null>(null)
   const [nicBackPreview, setNicBackPreview] = useState<string | null>(null)
+  const [checklistOpen, setChecklistOpen] = useState(true)
 
   const formik = useFormik({
     initialValues,
     validationSchema: registrationSchema,
+    validateOnMount: true,
     onSubmit: async (values, {setStatus, setSubmitting}) => {
       setLoading(true)
 
@@ -300,6 +363,26 @@ export function Registration() {
     }
   }, [formik.values.class_type])
 
+  const checklistItems = REQUIRED_FIELD_ORDER.filter((field) =>
+    isFieldApplicable(field, formik.values)
+  ).map((field) => ({
+    field,
+    label: FIELD_LABELS[field],
+    done: isFieldComplete(field, formik.values, formik.errors),
+    error: formik.errors[field as keyof typeof formik.errors],
+  }))
+  const pendingCount = checklistItems.filter((item) => !item.done).length
+
+  const scrollToField = (field: string) => {
+    const el = document.getElementById(`reg-field-${field}`)
+    if (el) {
+      el.scrollIntoView({behavior: 'smooth', block: 'center'})
+      if (el instanceof HTMLInputElement || el instanceof HTMLSelectElement) {
+        el.focus()
+      }
+    }
+  }
+
   return (
     <form
       className='form w-500 fv-plugins-bootstrap5 fv-plugins-framework'
@@ -335,6 +418,7 @@ export function Registration() {
         <div className='col-xl-6'>
           <label className='form-label fw-bolder text-dark fs-6'>First name</label>
           <input
+            id='reg-field-firstname'
             placeholder='First name'
             type='text'
             autoComplete='off'
@@ -362,6 +446,7 @@ export function Registration() {
           <div className='fv-row'>
             <label className='form-label fw-bolder text-dark fs-6'>Last name</label>
             <input
+              id='reg-field-lastname'
               placeholder='Last name'
               type='text'
               autoComplete='off'
@@ -394,6 +479,7 @@ export function Registration() {
         <div className='col-xl-6'>
           <label className='form-label fw-bolder text-dark fs-6'>Date of Birth</label>
           <input
+            id='reg-field-dob'
             type='date'
             autoComplete='off'
             {...formik.getFieldProps('dob')}
@@ -416,6 +502,7 @@ export function Registration() {
         <div className='col-xl-6'>
           <label className='form-label fw-bolder text-dark fs-6'>Phone number</label>
           <input
+            id='reg-field-phone'
             placeholder='Phone number'
             type='number'
             autoComplete='off'
@@ -443,6 +530,7 @@ export function Registration() {
       <div className='fv-row mb-4'>
         <label className='class="form-label fw-bolder text-dark fs-6'>Class Grade</label>
         <select
+          id='reg-field-class_grade'
           className='form-select form-select-solid form-select-lg'
           {...formik.getFieldProps('class_grade')}
         >
@@ -466,6 +554,7 @@ export function Registration() {
         <div className='fv-row mb-2'>
           <label className='form-label fw-bolder text-dark fs-6'>NIC</label>
             <input
+              id='reg-field-nic'
               placeholder='123456789v'
               type='text'
               autoComplete='off'
@@ -494,6 +583,7 @@ export function Registration() {
             <label className='form-label fw-bolder text-dark fs-6'>NIC Front Image(Maximum 1MB)</label>
 
             <input
+              id='reg-field-nic_front'
               type='file'
               accept='image/*'
               className='form-control form-control-lg form-control-solid'
@@ -522,6 +612,7 @@ export function Registration() {
             <label className='form-label fw-bolder text-dark fs-6'>NIC Back Image(Maximum 1MB)</label>
 
             <input
+              id='reg-field-nic_back'
               type='file'
               accept='image/*'
               className='form-control form-control-lg form-control-solid'
@@ -555,6 +646,7 @@ export function Registration() {
       <div className='fv-row mb-4'>
         <label className='form-label fw-bolder text-dark fs-6'>Email</label>
         <input
+          id='reg-field-email'
           placeholder='Email'
           type='email'
           autoComplete='off'
@@ -581,6 +673,7 @@ export function Registration() {
       <div className='fv-row mb-4'>
         <label className='class="form-label fw-bolder text-dark fs-6'>School</label>
         <input
+          id='reg-field-school'
           placeholder='School'
           type='text'
           autoComplete='off'
@@ -608,6 +701,7 @@ export function Registration() {
       <div className='fv-row mb-4'>
         <label className='class="form-label fw-bolder text-dark fs-6'>Address</label>
         <input
+          id='reg-field-address'
           placeholder='Address'
           type='text'
           autoComplete='off'
@@ -636,6 +730,7 @@ export function Registration() {
       <div className='fv-row mb-4'>
         <label className='class="form-label fw-bolder text-dark fs-6'>District</label>
         <select
+          id='reg-field-district'
           {...formik.getFieldProps('district')}
           className={clsx(
             'form-select form-select-solid form-select-lg',
@@ -686,6 +781,7 @@ export function Registration() {
       <div className='fv-row mb-4'>
         <label className='class="form-label fw-bolder text-dark fs-6'>Class Type</label>
         <select
+          id='reg-field-class_type'
           className='form-select form-select-solid form-select-lg'
           {...formik.getFieldProps('class_type')}
         >
@@ -707,6 +803,7 @@ export function Registration() {
         <div className='fv-row mb-4'>
           <label className='class="form-label fw-bolder text-dark fs-6'>Location</label>
           <select
+            id='reg-field-location'
             className='form-select form-select-solid form-select-lg'
             {...formik.getFieldProps('location')}
           >
@@ -753,6 +850,7 @@ export function Registration() {
           <label className='form-label fw-bolder text-dark fs-6'>Password</label>
           <div className='position-relative mb-3'>
             <input
+              id='reg-field-password'
               type='password'
               placeholder='Password'
               autoComplete='off'
@@ -797,6 +895,7 @@ export function Registration() {
       <div className='fv-row mb-5'>
         <label className='form-label fw-bolder text-dark fs-6'>Confirm Password</label>
         <input
+          id='reg-field-changepassword'
           type='password'
           placeholder='Password confirmation'
           autoComplete='off'
@@ -827,12 +926,12 @@ export function Registration() {
           <input
             className='form-check-input'
             type='checkbox'
-            id='kt_login_toc_agree'
+            id='reg-field-acceptTerms'
             {...formik.getFieldProps('acceptTerms')}
           />
           <label
             className='form-check-label fw-bold text-gray-700 fs-6'
-            htmlFor='kt_login_toc_agree'
+            htmlFor='reg-field-acceptTerms'
           >
             I Agree the{' '}
             <Link to='#' className='ms-1 link-primary'>
@@ -878,6 +977,59 @@ export function Registration() {
         </Link>
       </div>
       {/* end::Form group */}
+
+      <div
+        style={{
+          position: 'fixed',
+          right: 16,
+          bottom: 16,
+          zIndex: 1050,
+          width: checklistOpen ? 280 : 220,
+          maxWidth: 'calc(100vw - 32px)',
+        }}
+      >
+        <div className='card shadow-lg border-0'>
+          <button
+            type='button'
+            className='card-header py-3 px-4 d-flex align-items-center justify-content-between border-0'
+            style={{background: pendingCount ? '#fff4de' : '#e8fff3', cursor: 'pointer'}}
+            onClick={() => setChecklistOpen((open) => !open)}
+          >
+            <div className='text-start'>
+              <div className='fw-bolder fs-7 text-gray-800'>Registration checklist</div>
+              <div className={`fs-8 ${pendingCount ? 'text-warning' : 'text-success'}`}>
+                {pendingCount ? `${pendingCount} pending` : 'All fields complete'}
+              </div>
+            </div>
+            <span className='fw-bold text-gray-600'>{checklistOpen ? '−' : '+'}</span>
+          </button>
+          {checklistOpen && (
+            <div className='card-body py-3 px-4' style={{maxHeight: 360, overflowY: 'auto'}}>
+              {checklistItems.map((item) => (
+                <button
+                  key={item.field}
+                  type='button'
+                  className='d-flex align-items-start w-100 text-start mb-2 p-0 bg-transparent border-0'
+                  onClick={() => scrollToField(item.field)}
+                >
+                  <span
+                    className={`badge me-2 mt-1 ${item.done ? 'badge-light-success' : 'badge-light-warning'}`}
+                    style={{minWidth: 62}}
+                  >
+                    {item.done ? 'Done' : 'Pending'}
+                  </span>
+                  <span>
+                    <span className='d-block fs-7 fw-bold text-gray-800'>{item.label}</span>
+                    {!item.done && item.error && (
+                      <span className='d-block fs-8 text-danger'>{String(item.error)}</span>
+                    )}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </form>
   )
 }
