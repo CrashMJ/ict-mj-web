@@ -5,6 +5,7 @@ import { API_BASE_URL, GCP_STORAGE_BASE_URL, LESSON_DRIVER_URL } from '../../../
 import { createBuyLessonViewData } from './users-list/core/_requests'
 import { VideoPlayerGDrive } from '../../../_metronic/partials/content/video-player/VideoPlayerGdrive'
 import VideoPlayerBunny from '../../../_metronic/partials/content/video-player/VideoPlayerBunny'
+import { LessonAccessLimit } from './LessonAccessLimit'
 
 type Props = {
   videoInfo?: any,
@@ -283,8 +284,15 @@ const handleDownloadPdf = (fileId: string) => {
               <i className="bi bi-clock me-2 text-primary"></i>
               <span>Length: <strong>{videoInfo.duration}</strong></span>
             </div>}
+            {videoInfo.days ? (
+              <div>
+                <i className="bi bi-calendar-check me-2 text-primary"></i>
+                <span>View limit: <strong>{videoInfo.days} days</strong></span>
+              </div>
+            ) : null}
           </div>
         </div>
+        <LessonAccessLimit videoInfo={videoInfo} buyInfo={buyInfo} />
 
         
         {/* Trailer Section */}

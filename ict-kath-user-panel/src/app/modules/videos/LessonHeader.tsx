@@ -5,6 +5,7 @@ import { GCP_STORAGE_BASE_URL, LESSON_DRIVER_URL } from '../../../config'
 import { createBuyLessonViewData } from './users-list/core/_requests'
 import VideoPlayerBunny from '../../../_metronic/partials/content/video-player/VideoPlayerBunny'
 import { VideoPlayerGDrive } from '../../../_metronic/partials/content/video-player/VideoPlayerGdrive'
+import { LessonAccessLimit } from './LessonAccessLimit'
 
 type Props = {
   videoInfo?: any,
@@ -12,24 +13,133 @@ type Props = {
   phone?: any
 }
 
+const FALLBACK_MAX_VIEWS = 3
+
+const parseCountList = (counts: any): any[] => {
+  if (Array.isArray(counts)) return counts
+  if (typeof counts === 'string') {
+    try {
+      const parsed = JSON.parse(counts)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
+const findByVideoId = (list: any[] | undefined, videoId: number) => {
+  if (!Array.isArray(list)) return undefined
+  return list.find((item: any) => Number(item.videoId) === Number(videoId))
+}
+
+const toPositiveNumber = (value: any) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
+
+const toNumberOrZero = (value: any) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+const resolveViewState = (viewCountObj: any, videoId: number, live?: {
+  usedCount?: number
+  maxCount?: number
+  remaining?: number
+  allowed?: boolean
+  expiredBy?: string
+}) => {
+  const recording = findByVideoId(viewCountObj?.recordings, videoId)
+  const countItem = findByVideoId(parseCountList(viewCountObj?.counts), videoId)
+
+  const maxCount =
+    toPositiveNumber(live?.maxCount) ??
+    toPositiveNumber(recording?.maxCount) ??
+    toPositiveNumber(viewCountObj?.maxCount) ??
+    FALLBACK_MAX_VIEWS
+
+  const usedCount =
+    live?.usedCount != null && Number.isFinite(Number(live.usedCount))
+      ? toNumberOrZero(live.usedCount)
+      : toNumberOrZero(recording?.viewCount ?? countItem?.viewCount)
+
+  const remainingRaw =
+    live?.remaining != null ? live.remaining
+    : recording?.remainingViews != null ? recording.remainingViews
+    : maxCount - usedCount
+
+  const remaining = Math.max(0, toNumberOrZero(remainingRaw))
+  const expiredBy = live?.expiredBy ?? recording?.expiredBy
+  const allowed =
+    live?.allowed != null ? Boolean(live.allowed)
+    : recording?.allowed != null ? Boolean(recording.allowed)
+    : remaining > 0 && usedCount < maxCount
+
+  return { maxCount, usedCount, remaining, allowed, expiredBy }
+}
+
 const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
   const [currentVideo, setCurrentVideo] = useState<string | null>('');
   const [currentVideoName, setCurrentVideoName] = useState<string | null>(null);
   const [stateSuccess, setStateSuccess] = useState<string | null>(null);
   const [stateErr, setStateErr] = useState<string | null>(null);
-  const [viewCount, setViewCount] = useState<string | 0>(0);
-  const [viewedId, setViewedId] = useState<string | number>(0);
+  const [sessionView, setSessionView] = useState<{
+    videoId: number
+    usedCount: number
+    maxCount?: number
+    remaining?: number
+    allowed?: boolean
+    expiredBy?: string
+  } | null>(null);
   const [isBunnyPlayer, setIsBunnyPlayer] = useState<boolean>(false);
+  const [isStarting, setIsStarting] = useState<boolean>(false);
 
-  // let actualViewCount = []
-  // if(buyInfo){
-  //  actualViewCount = buyInfo.viewCount && buyInfo.viewCount.counts ? JSON.parse(buyInfo.viewCount.counts) : [];
-  // }else{
-  //   actualViewCount = [];
-  // }
+  const viewState = resolveViewState(
+    buyInfo?.viewCount,
+    videoInfo.id,
+    sessionView && Number(sessionView.videoId) === Number(videoInfo.id) ? sessionView : undefined
+  )
+  const displayedViewCount = Math.min(viewState.usedCount, viewState.maxCount)
+  const atViewLimit = !viewState.allowed
+
+  const limitMessage = (state: { maxCount: number; expiredBy?: string }) => {
+    if (state.expiredBy && state.expiredBy !== 'views') {
+      return '🚫 Your viewing period for this video has expired. Please contact support.'
+    }
+    return `🚫 You have already watched this video ${state.maxCount} times. Please contact support.`
+  }
+
+  const blockPlayback = (state: { usedCount: number; maxCount: number; remaining?: number; expiredBy?: string; allowed?: boolean }) => {
+    setStateErr(limitMessage(state));
+    setStateSuccess(null);
+    setSessionView({
+      videoId: videoInfo.id,
+      usedCount: state.usedCount,
+      maxCount: state.maxCount,
+      remaining: state.remaining ?? 0,
+      allowed: false,
+      expiredBy: state.expiredBy,
+    });
+    setCurrentVideo(null);
+    setCurrentVideoName(null);
+  }
+
     const handleStartClick = async (videoUrl: string, name: string, videoId: number) => {
-    if (!buyInfo || buyInfo.status !== 'active' || buyInfo.payment_status !== 'approved') return;
+    if (!buyInfo || buyInfo.status !== 'active' || buyInfo.payment_status !== 'approved' || isStarting) return;
+
+    const currentState = resolveViewState(
+      buyInfo?.viewCount,
+      videoId,
+      sessionView && Number(sessionView.videoId) === Number(videoId) ? sessionView : undefined
+    )
+    if (!currentState.allowed) {
+      blockPlayback(currentState)
+      return
+    }
+
       setIsBunnyPlayer(false);
+      setIsStarting(true);
     try {
       let videoNormalizedId;
 
@@ -39,35 +149,56 @@ const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
       }else{
         videoNormalizedId = videoUrl;
       }
-  //     const viewCountData = {
-  //             "main_id": videoInfo.id,
-  //             "lesson_type": videoInfo.type,
-  //             "video_id": videoId
-  //         }
+      const viewCountData = {
+              "main_id": videoInfo.id,
+              "lesson_type": videoInfo.type,
+              "video_id": videoId
+          }
   
-  //     const res = await createBuyLessonViewData(viewCountData);
-  // console.log('RESSSS',res)
-  //     const data = res.data;
-        setViewedId(videoId);
+      const res = await createBuyLessonViewData(viewCountData);
+  console.log('RESSSS',res)
+      const data = res.data ?? res;
+      const liveUsed = Number.isFinite(Number(data?.count))
+        ? Number(data.count)
+        : (typeof data?.viewCount === 'number' ? Number(data.viewCount) : undefined)
+      const responseViewCount = typeof data?.viewCount === 'object' && data.viewCount
+        ? data.viewCount
+        : {
+            ...(buyInfo?.viewCount || {}),
+            maxCount: data?.maxCount ?? buyInfo?.viewCount?.maxCount,
+            recordings: data?.recordings ?? buyInfo?.viewCount?.recordings,
+            counts: data?.counts ?? buyInfo?.viewCount?.counts,
+          }
+      const nextState = resolveViewState(responseViewCount, videoId, {
+        usedCount: liveUsed,
+        maxCount: data?.maxCount,
+        remaining: data?.remainingViews ?? data?.remaining,
+        allowed: data?.allowed,
+        expiredBy: data?.expiredBy,
+      })
+
+      setSessionView({
+        videoId,
+        usedCount: nextState.usedCount,
+        maxCount: nextState.maxCount,
+        remaining: nextState.remaining,
+        allowed: nextState.allowed,
+        expiredBy: nextState.expiredBy,
+      });
+
+      if (nextState.allowed) {
+        setStateErr(null);
+        setStateSuccess(`⚠️ You have ${nextState.remaining} views remaining for this video.`)
         setCurrentVideo(videoNormalizedId);
         setCurrentVideoName(name);
-      // if (data.allowed) {
-      //   setStateErr(null);
-      //   setViewCount(data.count);
-      //   setViewedId(videoId);
-      //   setStateSuccess(`⚠️ You have ${2 - data.count} views remaining for this video.`)
-      //   setCurrentVideo(videoUrl);
-      //   setCurrentVideoName(name);
-      // } else {
-      //   setStateErr('🚫 You have already watched this video 2 times. Please contact support.');
-      //   setViewCount(data.count);
-      //   setViewedId(videoId);
-      //   setCurrentVideo(null);
-      //   setCurrentVideoName(null);
-      // }
+      } else {
+        blockPlayback(nextState);
+      }
     } catch (error) {
       console.error('Error starting video:', error);
       setStateErr('⚠️ Something went wrong. Please try again later.');
+    } finally {
+      setIsStarting(false);
     }
   };
 
@@ -144,8 +275,21 @@ const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
                 <span>Length: <strong>{videoInfo.duration}</strong></span>
               </div>
             )}
+            {videoInfo.days ? (
+              <div>
+                <i className="bi bi-calendar-check me-2 text-primary"></i>
+                <span>View limit: <strong>{videoInfo.days} days</strong></span>
+              </div>
+            ) : null}
           </div>
         </div>
+        <LessonAccessLimit
+          videoInfo={videoInfo}
+          buyInfo={buyInfo}
+          remainingViews={viewState.remaining}
+          usedViews={displayedViewCount}
+          maxViews={viewState.maxCount}
+        />
     
         {/* Trailer Section */}
         {videoInfo.trailer && (
@@ -197,15 +341,13 @@ const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
                   }
                 </div>
                 <div className="p-3 order-2 order-md-3 d-flex align-items-center">
-                  {/* <p className='text-warning'>
-                    {viewCount !== 0 && viewedId == videoInfo.id
-                      ?  viewCount
-                      : actualViewCount.length > 0 && actualViewCount.find((item: any) => item.videoId === videoInfo.id)?.viewCount || 0
-                    } / 2
-                  </p> */}
+                  <p className='text-warning'>
+                    {displayedViewCount} / {viewState.maxCount}
+                  </p>
                   <button 
                       className='btn btn-sm btn-success mx-2'
                       onClick={() => handleStartClick(videoInfo.url, videoInfo.name, videoInfo.id)}
+                      disabled={atViewLimit || isStarting}
                     >
                       START
                   </button>
@@ -228,9 +370,11 @@ const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
               )}
             </div>
 
-            {stateErr ? (
+            {stateErr || atViewLimit ? (
               <div className='alert alert-danger'>
-                <div className='alert-text font-weight-bold'>{stateErr}</div>
+                <div className='alert-text font-weight-bold'>
+                  {stateErr || limitMessage(viewState)}
+                </div>
               </div>
             ) : (
               <></>
