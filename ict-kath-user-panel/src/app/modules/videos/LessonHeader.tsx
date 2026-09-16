@@ -5,6 +5,7 @@ import { GCP_STORAGE_BASE_URL, LESSON_DRIVER_URL } from '../../../config'
 import { createBuyLessonViewData } from './users-list/core/_requests'
 import VideoPlayerBunny from '../../../_metronic/partials/content/video-player/VideoPlayerBunny'
 import { VideoPlayerGDrive } from '../../../_metronic/partials/content/video-player/VideoPlayerGdrive'
+import { LessonAccessLimit } from './LessonAccessLimit'
 
 type Props = {
   videoInfo?: any,
@@ -274,8 +275,21 @@ const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
                 <span>Length: <strong>{videoInfo.duration}</strong></span>
               </div>
             )}
+            {videoInfo.days ? (
+              <div>
+                <i className="bi bi-calendar-check me-2 text-primary"></i>
+                <span>View limit: <strong>{videoInfo.days} days</strong></span>
+              </div>
+            ) : null}
           </div>
         </div>
+        <LessonAccessLimit
+          videoInfo={videoInfo}
+          buyInfo={buyInfo}
+          remainingViews={viewState.remaining}
+          usedViews={displayedViewCount}
+          maxViews={viewState.maxCount}
+        />
     
         {/* Trailer Section */}
         {videoInfo.trailer && (
