@@ -106,7 +106,7 @@ const LessonTabs = () => {
         <div className="my-5">
           <h4 className="fw-bold mb-4">A/L Classes</h4>
           <div className="row">
-            {['2026', '2027', '2028'].map((grade, index) => (
+            {['2027', '2028', '2029'].map((grade, index) => (
               <div
                 className="col-md-4 mb-3"
                 key={index}
@@ -130,7 +130,7 @@ const LessonTabs = () => {
         </div>
       )}
 
-      {(selectedGrade === '2026' || selectedGrade === '2027' || selectedGrade === '2028') && (
+      {(selectedGrade === '2027' || selectedGrade === '2028' || selectedGrade === '2029') && (
         <div className="my-5">
           <h4 className="fw-bold mb-4">Class Type</h4>
           <div className="row">
