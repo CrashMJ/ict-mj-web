@@ -13,7 +13,7 @@ type Props = {
   phone?: any
 }
 
-const FALLBACK_MAX_VIEWS = 2
+const FALLBACK_MAX_VIEWS = 3
 
 const parseCountList = (counts: any): any[] => {
   if (Array.isArray(counts)) return counts
