@@ -4,3 +4,5 @@ export const API_BASE_URL = 'https://prod-api-v2.ictkathurusingha.com/'
 export const GCP_STORAGE_BASE_URL = 'https://storage.googleapis.com/ict-kath-bucket/'
 export const LESSON_YT_PLAYER_URL = 'https://ict-kath-player.web.app/?embedCode='
 export const LESSON_DRIVER_URL = 'https://drive.google.com/file/d/'
+/** Isolated secured YouTube player (Vercel). Student app mints a token, then iframes this host. */
+export const SECURE_YT_PLAYER_URL = 'https://mj-secure-yt-player-nyne-lilac.vercel.app'
