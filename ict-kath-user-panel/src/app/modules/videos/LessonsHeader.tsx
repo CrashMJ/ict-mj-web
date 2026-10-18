@@ -5,6 +5,8 @@ import { API_BASE_URL, GCP_STORAGE_BASE_URL, LESSON_DRIVER_URL } from '../../../
 import { createBuyLessonViewData } from './users-list/core/_requests'
 import { VideoPlayerGDrive } from '../../../_metronic/partials/content/video-player/VideoPlayerGdrive'
 import VideoPlayerBunny from '../../../_metronic/partials/content/video-player/VideoPlayerBunny'
+import VideoPlayerYoutube from '../../../_metronic/partials/content/video-player/VideoPlayerYoutube'
+import { isYoutubeClientSource } from '../../../_metronic/partials/content/video-player/secure-yt/youtubePlaybackApi'
 import { LessonAccessLimit } from './LessonAccessLimit'
 
 type Props = {
@@ -22,6 +24,8 @@ const LessonsHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
     const [viewCount, setViewCount] = useState<string | 0>(0);
     const [viewedId, setViewedId] = useState<string | number>(0);
     const [isBunnyPlayer, setIsBunnyPlayer] = useState<boolean>(false);
+    const [isYoutubePlayer, setIsYoutubePlayer] = useState<boolean>(false);
+    const [ytChapterVideoId, setYtChapterVideoId] = useState<number | undefined>(undefined);
   
   let freeChapters: any[] = [];
   let paidLessons: any[] = [];
@@ -39,6 +43,7 @@ for (const item of videoInfo.videoPackages) {
   if (item.paid_type === 'free') {
     const filteredData = {
       id: item.id,
+      sourceVideoId: item.video?.id,
       name: item.video.name,
       url: item.video.url,
       tuteUrl: item.video.tute_url,
@@ -50,6 +55,7 @@ for (const item of videoInfo.videoPackages) {
   } else if (item.paid_type === 'paid') {
     const filteredData = {
       id: item.id,
+      sourceVideoId: item.video?.id,
       name: item.video.name,
       url: item.video.url,
       tuteUrl: item.video.tute_url,
@@ -80,19 +86,31 @@ const allLessons = freeChapters.concat(paidLessons);
 //   }
 // };
 
-const handleStartClick = async (videoUrl: string, name: string, videoId: number, type: any) => {
+const handleStartClick = async (
+  videoUrl: string,
+  name: string,
+  videoId: number,
+  type: any,
+  sourceVideoId?: number
+) => {
   if(type == 'paid'){
     if (!buyInfo || buyInfo.status !== 'active' || buyInfo.payment_status !== 'approved') return;
   }
   setIsBunnyPlayer(false);
+  setIsYoutubePlayer(false);
+  setYtChapterVideoId(undefined);
 
   try {
 
       let videoNormalizedId;
-      if(videoUrl.endsWith('_b')){
+      if (isYoutubeClientSource(videoUrl) || /youtube\.com|youtu\.be/i.test(String(videoUrl || ''))) {
+        videoNormalizedId = '_yt';
+        setIsYoutubePlayer(true);
+        setYtChapterVideoId(sourceVideoId ? Number(sourceVideoId) : undefined);
+      } else if (videoUrl && videoUrl.endsWith('_b')) {
         videoNormalizedId = videoUrl.slice(0, -2);
         setIsBunnyPlayer(true);
-      }else{
+      } else {
         videoNormalizedId = videoUrl;
       }
 
@@ -169,7 +187,7 @@ const handleDownloadPdf = (fileId: string) => {
           <div className="p-3 order-2 order-md-3">
             <button 
               className='btn btn-sm mx-5 btn-info'
-              onClick={() => handleStartClick(chapter.url, chapter.name, chapter.id, 'free')}
+              onClick={() => handleStartClick(chapter.url, chapter.name, chapter.id, 'free', chapter.sourceVideoId)}
               >
                 {chapter.buttonLabel}
             </button>
@@ -202,7 +220,7 @@ const handleDownloadPdf = (fileId: string) => {
 
                   <button 
                       className='btn btn-sm mx-5 btn-success'
-                      onClick={() => handleStartClick(chapter.url, chapter.name, chapter.id, 'paid')}
+                      onClick={() => handleStartClick(chapter.url, chapter.name, chapter.id, 'paid', chapter.sourceVideoId)}
                     >
                       {chapter.buttonLabel}
                   </button>
@@ -343,7 +361,19 @@ const handleDownloadPdf = (fileId: string) => {
           </div>
         </div>
       </div>
-      {currentVideo && (
+      {currentVideo && isYoutubePlayer && (
+        <div className="row justify-content-center my-5 px-3">
+          <div className="col-12 col-lg-10">
+            <VideoPlayerYoutube
+              key={`yt-${videoInfo.id}-${ytChapterVideoId || 'main'}`}
+              videoId={Number(videoInfo.id)}
+              chapterVideoId={ytChapterVideoId}
+              phone={phone}
+            />
+          </div>
+        </div>
+      )}
+      {currentVideo && !isYoutubePlayer && (
           <div className="row d-flex flex-column align-items-center text-center my-5 py-5 mx-5" style={{ width: "100%" }}>
             <div className="col-md-8 col-sm-12" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
               <h4 className="pb-5 fw-bold">{currentVideoName}</h4>
@@ -375,7 +405,6 @@ const handleDownloadPdf = (fileId: string) => {
                     textAlign: "center",
                   }}
                 >
-               
                   {isBunnyPlayer ? (
                     <VideoPlayerBunny key={currentVideo} videoId={currentVideo} phone={phone} />
                   ) : (

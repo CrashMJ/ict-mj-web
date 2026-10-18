@@ -5,6 +5,8 @@ import { GCP_STORAGE_BASE_URL, LESSON_DRIVER_URL } from '../../../config'
 import { createBuyLessonViewData } from './users-list/core/_requests'
 import VideoPlayerBunny from '../../../_metronic/partials/content/video-player/VideoPlayerBunny'
 import { VideoPlayerGDrive } from '../../../_metronic/partials/content/video-player/VideoPlayerGdrive'
+import VideoPlayerYoutube from '../../../_metronic/partials/content/video-player/VideoPlayerYoutube'
+import { isYoutubeClientSource } from '../../../_metronic/partials/content/video-player/secure-yt/youtubePlaybackApi'
 import { LessonAccessLimit } from './LessonAccessLimit'
 
 type Props = {
@@ -93,6 +95,7 @@ const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
     expiredBy?: string
   } | null>(null);
   const [isBunnyPlayer, setIsBunnyPlayer] = useState<boolean>(false);
+  const [isYoutubePlayer, setIsYoutubePlayer] = useState<boolean>(false);
   const [isStarting, setIsStarting] = useState<boolean>(false);
 
   const viewState = resolveViewState(
@@ -139,14 +142,19 @@ const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
     }
 
       setIsBunnyPlayer(false);
+      setIsYoutubePlayer(false);
       setIsStarting(true);
     try {
       let videoNormalizedId;
 
-      if(videoUrl.endsWith('_b')){
+      if (isYoutubeClientSource(videoUrl) || /youtube\.com|youtu\.be/i.test(String(videoUrl || ''))) {
+        // Never keep a YouTube URL/id in client state — player resolves via POST session
+        videoNormalizedId = '_yt';
+        setIsYoutubePlayer(true);
+      } else if (videoUrl.endsWith('_b')) {
         videoNormalizedId = videoUrl.slice(0, -2);
         setIsBunnyPlayer(true);
-      }else{
+      } else {
         videoNormalizedId = videoUrl;
       }
       const viewCountData = {
@@ -383,7 +391,14 @@ const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
         </div>
 
         {/* Video Player Section Inside Card */}
-        {currentVideo && (
+        {currentVideo && isYoutubePlayer && (
+          <div className="row justify-content-center my-5 px-3">
+            <div className="col-12 col-lg-10">
+              <VideoPlayerYoutube key={`yt-${videoInfo.id}`} videoId={Number(videoInfo.id)} phone={phone} />
+            </div>
+          </div>
+        )}
+        {currentVideo && !isYoutubePlayer && (
           <div className="row d-flex flex-column align-items-center text-center my-5 py-5 mx-5" style={{ width: "100%" }}>
             <div className="col-md-8 col-sm-12" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
               <h4 className="pb-5 fw-bold">{currentVideoName}</h4>
@@ -417,7 +432,11 @@ const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
                     textAlign: "center",
                   }}
                 >
-                  {isBunnyPlayer? <VideoPlayerBunny videoId={currentVideo} phone={phone} /> : <VideoPlayerGDrive videoId={currentVideo} phone={phone} />}
+                  {isBunnyPlayer ? (
+                    <VideoPlayerBunny videoId={currentVideo} phone={phone} />
+                  ) : (
+                    <VideoPlayerGDrive videoId={currentVideo} phone={phone} />
+                  )}
 
                 </div>
               </div>
