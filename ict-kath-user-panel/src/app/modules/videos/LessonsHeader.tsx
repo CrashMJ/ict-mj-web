@@ -6,7 +6,7 @@ import { createBuyLessonViewData } from './users-list/core/_requests'
 import { VideoPlayerGDrive } from '../../../_metronic/partials/content/video-player/VideoPlayerGdrive'
 import VideoPlayerBunny from '../../../_metronic/partials/content/video-player/VideoPlayerBunny'
 import VideoPlayerYoutube from '../../../_metronic/partials/content/video-player/VideoPlayerYoutube'
-import { isYoutubeClientSource } from '../../../_metronic/partials/content/video-player/secure-yt/youtubePlaybackApi'
+import { isYoutubeClientSource } from '../../../_metronic/partials/content/video-player/youtubePlaybackApi'
 import { LessonAccessLimit } from './LessonAccessLimit'
 
 type Props = {
@@ -103,11 +103,11 @@ const handleStartClick = async (
   try {
 
       let videoNormalizedId;
-      if (isYoutubeClientSource(videoUrl) || /youtube\.com|youtu\.be/i.test(String(videoUrl || ''))) {
+      if (isYoutubeClientSource(videoUrl)) {
         videoNormalizedId = '_yt';
         setIsYoutubePlayer(true);
         setYtChapterVideoId(sourceVideoId ? Number(sourceVideoId) : undefined);
-      } else if (videoUrl && videoUrl.endsWith('_b')) {
+      } else if (typeof videoUrl === 'string' && videoUrl.endsWith('_b')) {
         videoNormalizedId = videoUrl.slice(0, -2);
         setIsBunnyPlayer(true);
       } else {
@@ -368,7 +368,6 @@ const handleDownloadPdf = (fileId: string) => {
               key={`yt-${videoInfo.id}-${ytChapterVideoId || 'main'}`}
               videoId={Number(videoInfo.id)}
               chapterVideoId={ytChapterVideoId}
-              phone={phone}
             />
           </div>
         </div>

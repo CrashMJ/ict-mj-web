@@ -6,7 +6,7 @@ import { createBuyLessonViewData } from './users-list/core/_requests'
 import VideoPlayerBunny from '../../../_metronic/partials/content/video-player/VideoPlayerBunny'
 import { VideoPlayerGDrive } from '../../../_metronic/partials/content/video-player/VideoPlayerGdrive'
 import VideoPlayerYoutube from '../../../_metronic/partials/content/video-player/VideoPlayerYoutube'
-import { isYoutubeClientSource } from '../../../_metronic/partials/content/video-player/secure-yt/youtubePlaybackApi'
+import { isYoutubeClientSource } from '../../../_metronic/partials/content/video-player/youtubePlaybackApi'
 import { LessonAccessLimit } from './LessonAccessLimit'
 
 type Props = {
@@ -147,11 +147,11 @@ const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
     try {
       let videoNormalizedId;
 
-      if (isYoutubeClientSource(videoUrl) || /youtube\.com|youtu\.be/i.test(String(videoUrl || ''))) {
-        // Never keep a YouTube URL/id in client state — player resolves via POST session
+      if (isYoutubeClientSource(videoUrl)) {
+        // Never keep a YouTube URL/id in client state — iframe player uses session token
         videoNormalizedId = '_yt';
         setIsYoutubePlayer(true);
-      } else if (videoUrl.endsWith('_b')) {
+      } else if (typeof videoUrl === 'string' && videoUrl.endsWith('_b')) {
         videoNormalizedId = videoUrl.slice(0, -2);
         setIsBunnyPlayer(true);
       } else {
@@ -394,7 +394,7 @@ const LessonHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
         {currentVideo && isYoutubePlayer && (
           <div className="row justify-content-center my-5 px-3">
             <div className="col-12 col-lg-10">
-              <VideoPlayerYoutube key={`yt-${videoInfo.id}`} videoId={Number(videoInfo.id)} phone={phone} />
+              <VideoPlayerYoutube key={`yt-${videoInfo.id}`} videoId={Number(videoInfo.id)} />
             </div>
           </div>
         )}

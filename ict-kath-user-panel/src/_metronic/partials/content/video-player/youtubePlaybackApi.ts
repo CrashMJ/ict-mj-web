@@ -1,13 +1,7 @@
 import axios, {AxiosResponse} from 'axios'
-import {API_BASE_URL} from '../../../../../config'
+import {API_BASE_URL} from '../../../../config'
 
 export const YOUTUBE_CLIENT_SENTINEL = '_yt'
-
-export type YoutubeEmbedPayload = {
-  youtubeVideoId: string
-  watermark: {name: string; phone: string}
-  expiresAt: number
-}
 
 export type YoutubeSessionPayload = {
   playbackToken: string
@@ -15,10 +9,16 @@ export type YoutubeSessionPayload = {
   ttlSeconds: number
 }
 
+/** True when API redacted a YouTube source (or legacy unredacted YT URL slipped through). */
 export function isYoutubeClientSource(url: unknown): boolean {
   if (url == null) return false
   const value = String(url).trim()
-  return value === YOUTUBE_CLIENT_SENTINEL || value.endsWith('_yt')
+  if (!value) return false
+  return (
+    value === YOUTUBE_CLIENT_SENTINEL ||
+    value.endsWith('_yt') ||
+    /youtube\.com|youtu\.be/i.test(value)
+  )
 }
 
 type ApiEnvelope<T> = {
@@ -34,7 +34,7 @@ function unwrap<T>(body: ApiEnvelope<T> | T): T {
   return body as T
 }
 
-/** POST short-lived playback token (no YouTube id). */
+/** POST short-lived playback token (YouTube id never returned). */
 export async function createYoutubePlaybackSession(
   videoId: number,
   chapterVideoId?: number
@@ -45,17 +45,6 @@ export async function createYoutubePlaybackSession(
       videoId,
       ...(chapterVideoId ? {chapterVideoId} : {}),
     }
-  )
-  return unwrap(res.data)
-}
-
-/** One-time resolve → youtubeVideoId + watermark. */
-export async function resolveYoutubeEmbed(
-  playbackToken: string
-): Promise<YoutubeEmbedPayload> {
-  const res: AxiosResponse<ApiEnvelope<YoutubeEmbedPayload>> = await axios.get(
-    `${API_BASE_URL}api/video-buy/youtube/embed`,
-    {params: {token: playbackToken}}
   )
   return unwrap(res.data)
 }
