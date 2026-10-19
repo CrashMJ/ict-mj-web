@@ -89,15 +89,15 @@
     "webpack-cli": "^4.8.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "bd": "react-scripts build && firebase deploy --only hosting",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
+    "bd": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build && firebase deploy --only hosting",
     "deploy": "firebase deploy --only hosting",
-    "test": "react-scripts test",
+    "test": "NODE_OPTIONS=--openssl-legacy-provider react-scripts test",
     "eject": "react-scripts eject",
     "lint": "prettier --check .",
     "format": "prettier --write .",
-    "rtl": "webpack --config webpack-rtl.config.js"
+    "rtl": "NODE_OPTIONS=--openssl-legacy-provider webpack --config webpack-rtl.config.js"
   },
   "eslintConfig": {
     "extends": [

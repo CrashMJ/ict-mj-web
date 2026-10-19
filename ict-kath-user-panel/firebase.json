@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "ict-kath-student-portal",
     "public": "build",
     "ignore": [
       "firebase.json",
