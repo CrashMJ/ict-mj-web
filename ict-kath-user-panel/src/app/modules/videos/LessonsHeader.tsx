@@ -39,11 +39,14 @@ const LessonsHeader: React.FC<Props> = ({ videoInfo, buyInfo, phone }) => {
   // }
 
 // Properly handle asynchronous logic
-for (const item of videoInfo.videoPackages) {
+for (const item of videoInfo.videoPackages || []) {
+  if (!item?.video) continue;
+  // Nested video_sell id — required for YouTube session chapterVideoId
+  const sourceVideoId = item.video?.id ?? item.video_id;
   if (item.paid_type === 'free') {
     const filteredData = {
       id: item.id,
-      sourceVideoId: item.video?.id,
+      sourceVideoId,
       name: item.video.name,
       url: item.video.url,
       tuteUrl: item.video.tute_url,
@@ -55,7 +58,7 @@ for (const item of videoInfo.videoPackages) {
   } else if (item.paid_type === 'paid') {
     const filteredData = {
       id: item.id,
-      sourceVideoId: item.video?.id,
+      sourceVideoId,
       name: item.video.name,
       url: item.video.url,
       tuteUrl: item.video.tute_url,
@@ -104,9 +107,13 @@ const handleStartClick = async (
 
       let videoNormalizedId;
       if (isYoutubeClientSource(videoUrl)) {
+        if (!sourceVideoId) {
+          setStateErr('⚠️ This chapter is missing a video link. Please contact support.');
+          return;
+        }
         videoNormalizedId = '_yt';
         setIsYoutubePlayer(true);
-        setYtChapterVideoId(sourceVideoId ? Number(sourceVideoId) : undefined);
+        setYtChapterVideoId(Number(sourceVideoId));
       } else if (typeof videoUrl === 'string' && videoUrl.endsWith('_b')) {
         videoNormalizedId = videoUrl.slice(0, -2);
         setIsBunnyPlayer(true);
