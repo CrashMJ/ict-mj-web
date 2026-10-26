@@ -230,7 +230,7 @@ export const Overview: React.FC<Props> = ({ setAuthApp }) => {
             <label className='col-lg-4 fw-bold text-muted'>Location</label>
 
             <div className='col-lg-8'>
-              <span className='fw-bolder fs-6 text-dark'>{auth.location == 'aone_montana' ? 'Aone Montana' : auth.location === 'montana_gampaha' ? 'Montana Gampaha' : auth.location === 'siyathra_kiribathgoda'? 'Siyathra Kiribathgoda' : auth.location === 'sisip_chilaw' ? 'Sisip Chilaw' : 'Unknown Location'}</span>
+              <span className='fw-bolder fs-6 text-dark'>{auth.location == 'aone_montana' ? 'Negambo' : auth.location === 'montana_gampaha' ? 'Gampaha' : auth.location === 'siyathra_kiribathgoda'? 'Kiribathgoda' : auth.location === 'sisip_chilaw' ? 'Chilaw' : 'Unknown Location'}</span>
             </div>
           </div>}
 

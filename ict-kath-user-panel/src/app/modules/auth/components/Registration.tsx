@@ -808,10 +808,10 @@ export function Registration() {
             {...formik.getFieldProps('location')}
           >
             <option value=''>Select Location</option>
-            <option value='aone_montana'>Aone Negambo</option>
-            <option value='montana_gampaha'>Montana Gampaha</option>
-            <option value='sisip_chilaw'>Sisip Chilaw</option>
-            <option value='siyathra_kiribathgoda'>Siyathra Kiribathgoda</option>
+            <option value='aone_montana'>Negambo</option>
+            <option value='montana_gampaha'>Gampaha</option>
+            <option value='sisip_chilaw'>Chilaw</option>
+            <option value='siyathra_kiribathgoda'>Kiribathgoda</option>
           </select>
           {formik.touched.location && formik.errors.location && (
             <div className='fv-plugins-message-container'>

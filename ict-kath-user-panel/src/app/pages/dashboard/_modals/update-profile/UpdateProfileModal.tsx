@@ -157,10 +157,10 @@ const UpdateProfileModal: React.FC<Props> = ({ show, handleClose, data }) => {
                 onChange={(e: any) => setLocation(e.target.value)}
               >
                 <option value=''>Select Location</option>
-                <option value='aone_montana'>Aone Negambo</option>
-                <option value='montana_gampaha'>Montana Gampaha</option>
-                <option value='sisip_chilaw'>Sisip Chilaw</option>
-                <option value='siyathra_kiribathgoda'>Siyathra Kiribathgoda</option>
+                <option value='aone_montana'>Negambo</option>
+                <option value='montana_gampaha'>Gampaha</option>
+                <option value='sisip_chilaw'>Chilaw</option>
+                <option value='siyathra_kiribathgoda'>Kiribathgoda</option>
                 {/* Add more locations as needed */}
               </select>
             </div>
